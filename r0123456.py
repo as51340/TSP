@@ -1,4 +1,4 @@
-import Reporter
+from reporter import Reporter
 import numpy as np
 
 # Modify the class name to match your student number.
@@ -19,7 +19,6 @@ class r0123456:
 		while( yourConvergenceTestsHere ):
 
 			# Your code here.
-
 			# Call the reporter with:
 			#  - the mean objective function value of the population
 			#  - the best objective function value of the population
@@ -31,3 +30,9 @@ class r0123456:
 
 		# Your code here.
 		return 0
+
+
+
+
+if __name__ == "__main__0":
+	pass
