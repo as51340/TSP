@@ -7,6 +7,8 @@ TSPProblem
 ]]
 Selection - k-tournament
 Variation
-- mutation - insert and sramble
+- mutation - insert and scramble
 - elimination - (lambda + mu) elimination
 - recombination - Order crossover
+- fitness function - sum of all weights
+
