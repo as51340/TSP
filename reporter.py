@@ -2,6 +2,7 @@ import sys
 import time
 
 # Class to report basic results of an evolutionary algorithm
+# TODO update reporter.py
 class Reporter:
 
 	def __init__(self, filename):
