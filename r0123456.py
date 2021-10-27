@@ -20,6 +20,24 @@ class r0123456:
 		self.population = None
 		self.k = k # k-tournament parameter
 
+	def objf(self, candidate):
+		sum = 0
+		for i in range(self.num_cities - 1):
+			city_1 = candidate[i]
+			city_2 = candidate[i+1]
+			weight = self.weights[city_1, city_2]
+			sum += weight
+		last_and_first_weight = self.weights[candidate[self.num_cities - 1], candidate[0]]
+		sum += last_and_first_weight
+		return sum
+
+	def objfpop(self, candidates):
+		array = np.zeros(self.k)
+		for i in range(self.k):
+			array[i] = self.objf(candidates[i])
+		return array
+
+
 	def initialize(self):
 		"""
 		Return population. Now it's very simple random initialization.
@@ -43,15 +61,15 @@ class r0123456:
 		:return: mutated population
 		"""
 		# Create 2D numpy array with 2 columns for two index
-		positions = np.random.choices(np.arrange(0, self.weights.shape[0]), replace=False, size=(population.shape[0], 2))
+		positions = np.random.choices(np.arrange(0, self.num_cities), replace=False, size=(population.shape[0], 2))
 		pass
 
 	# The evolutionary algorithm's main loop
 	def selection(self):
-		selected = np.zeros((self.mu, self.weights.shape[0]))
+		selected = np.zeros((self.mu, self.num_cities))
 		for ii in range(self.mu):
-			ri = random.choices(range(self.lambdaa), k = self.k) # saving k indexes from the population
-			min = np.argmin( self.objf(self.population[ri, :]) )
+			ri = random.choices(range(self.lambdaa), k = self.k)  # saving k indexes from the population
+			min = np.argmin(self.objfpop(self.population[ri, :]) )  # find best index
 			selected[ii,:] = self.population[ri[min],:]
 		return selected
 
