@@ -15,7 +15,8 @@ class r0123456:
 		self.alpha = alpha  # mutation raze
 		self.iters = iters # number of iterations
 		self.weights = None  # will be initialized later
-		self.population = None
+		self.num_cities = None  # will be intialized later
+		self.population = None  # will be initialized later
 
 	def initialize(self):
 		"""
@@ -42,14 +43,12 @@ class r0123456:
 
 	def mutation(self, population):
 		"""
-		Population is here parent population + all offsprings.
+		Population is here parent population + all offsprings. Performs insert mutation
 		:param population:
 		:return: mutated population
 		"""
-		pass
-
-	# The evolutionary algorithm's main loop
-	def selection(self):
+		# Create 2D numpy array with 2 columns for two index
+		positions = np.random.choices(np.arrange(0, self.weights.shape[0]), replace=False, size=(population.shape[0], 2))
 		pass
 
 	def optimize(self, filename):
@@ -57,6 +56,7 @@ class r0123456:
 		self.weights = np.loadtxt(test_file, delimiter=",")
 		test_file.close()
 		self.population = self.initialize()  # Initialize population
+		self.num_cities = self.weights.shape[0]
 
 		for i in range(self.iters):
 			# Your code here.
