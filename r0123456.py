@@ -27,9 +27,10 @@ class r0123456:
 			city_2 = candidate[i+1]
 			city_1 = candidate[i]
 			# print("City_2:", city_2, "city_1:", city_1)
-			weight = self.weights[city_1, city_2]
+			weight = self.weights[11, 0]
 			# print("Weight:", weight)
 			sum += weight
+
 		# print("Weight without first and last:", sum)
 		last_and_first_weight = self.weights[candidate[self.num_cities - 1], candidate[0]]
 		sum += last_and_first_weight
@@ -155,9 +156,7 @@ if __name__ == "__main__":
 	k = 5
 	algorithm = r0123456(lambdaa=lambdaa, mu=mu, alpha=alpha, iters=iters, k=k)
 
-	algorithm.optimize("./test/tour29.csv")
-
-
+	# algorithm.optimize("./test/tour100.csv")
 	# Mutation test
 	# algorithm.population = algorithm.initialize()
 	# print(algorithm.population)
