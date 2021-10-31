@@ -3,6 +3,7 @@ import numpy as np
 
 
 # Modify the class name to match your student number. Evolutionary algorithm
+# Git kraken
 class r0123456:
 
 	#def optimize(self, filename):
@@ -23,7 +24,10 @@ class r0123456:
 		Return population. Now it's very simple random initialization.
 		:return:
 		"""
-		return np.random.randint(low=1, high=self.weights.shape[0] + 1, size=(self.lambdaa, self.weights.shape[0]))
+		self.population = np.zeros((self.lambdaa, self.num_cities))
+		for i in range(self.lambdaa):
+			self.population[i, :] = np.random.choice(np.arange(1, self.num_cities + 1), replace=False, size=self.num_cities)
+		return self.population
 
 	def selection(self):
 		"""
@@ -48,8 +52,21 @@ class r0123456:
 		:return: mutated population
 		"""
 		# Create 2D numpy array with 2 columns for two index
-		positions = np.random.choices(np.arrange(0, self.weights.shape[0]), replace=False, size=(population.shape[0], 2))
-		pass
+		for i in range(population.shape[0]):
+			print(f"Population[{i}]", population[i, :])
+			positions = np.random.choice(np.arange(0, population.shape[1]), replace=False, size=2)
+			pos1, pos2 = max(positions), min(positions)
+			print("Positions: ", (pos1, pos2))
+			bef = population[i, 0:pos1 + 1]
+			print("Array before:", bef)
+			bef = np.append(bef, population[i, pos2])
+			print("Array before:", bef)
+			after = population[i, pos2 + 1]
+			print("Array after:", after)
+			between = population[i, pos1 + 1:pos2]
+			print("Array between:", between)
+			solution = np.concatenate((bef, between, after))
+			print("Solution:", solution)
 
 	def optimize(self, filename):
 		test_file = open(filename)
@@ -59,6 +76,9 @@ class r0123456:
 		self.num_cities = self.weights.shape[0]
 
 		for i in range(self.iters):
+
+			selected = self.selection()
+			
 			# Your code here.
 			# Call the reporter with:
 			#  - the mean objective function value of the population
@@ -78,16 +98,17 @@ class r0123456:
 if __name__ == "__main__":
 	file_name = "./test/tour29.csv"
 	alpha = 0.05  # mutation rate
-	lambdaa = 100  # population size, maybe too much
+	lambdaa = 10  # population size, maybe too much
 	mu = 50  # also maybe too much we need to check
 	iters = 100  # number of iterations to be run
-
-	#weights = np.loadtxt(open(file_name), delimiter=",")
-
-	#arr = np.random.randint(low=1, high=weights.shape[0] + 1, size=(lambdaa, weights.shape[0]))
-
 	algorithm = r0123456(lambdaa, mu, alpha, iters)
-	algorithm.optimize(file_name)
+	algorithm.population = algorithm.initialize()
+	print(algorithm.population)
+	#algorithm.mutation(population)
+
+
+
+	# algorithm.optimize(file_name)
 
 
 
