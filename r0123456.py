@@ -3,6 +3,7 @@ import numpy as np
 import random
 
 
+
 # Modify the class name to match your student number. Evolutionary algorithm
 # Git kraken
 class r0123456:
@@ -37,6 +38,7 @@ class r0123456:
 		# print("Final sum:", sum)
 		return sum
 
+
 	def objfpop(self, candidates):
 		array = np.zeros(candidates.shape[0])
 		for i in range(candidates.shape[0]):
@@ -53,9 +55,21 @@ class r0123456:
 			self.population[i, :] = np.random.choice(np.arange(0, self.num_cities, dtype=np.uint32), replace=False, size=self.num_cities)
 		return self.population
 
-	def crossover(self, selected_population):
-		# Performs crossover on selected population and returns only offspring
-		return selected_population
+	def parse(self, input, start, stop):
+		if start > stop:
+			return np.concatenate([input[start:], input[:stop]])
+		return input[start:stop]
+
+	def recombination(self, p1, p2):
+		i = random.randint(0, self.num_cities - 1)
+		j = random.randint(0, self.num_cities - 1)
+
+		slice_P1 = self.parse(p1, i, j)
+		candidate_P2 = np.roll(p2, -(j))
+		no_dup = np.setdiff1d(candidate_P2, slice_P1, assume_unique=True)
+		not_ordered_sol = np.concatenate([slice_P1, no_dup])
+		sol = np.roll(not_ordered_sol, i)
+		return sol
 
 	def mutation(self, population):
 		"""
@@ -86,13 +100,9 @@ class r0123456:
 
 	# The evolutionary algorithm's main loop
 	def selection(self):
-		selected = np.zeros((self.mu, self.num_cities), dtype=np.uint32)
-		for ii in range(self.mu):
-			ri = random.choices(range(self.lambdaa), k = self.k)  # saving k indexes from the population
-			min = np.argmin(self.objfpop(self.population[ri, :]))  # find best index
-			selected[ii, :] = self.population[ri[min], :]
-			# print("Selected weight:", self.objf(self.population[ri[min], :]))
-		return selected
+		ri = random.choices(range(self.lambdaa), k = self.k)  # saving k indexes from the population
+		min = np.argmin(self.objfpop(self.population[ri, :]))  # find best index
+		return self.population[ri[min], :]
 
 	def elimination(self, joined_population):
 		"""
@@ -120,13 +130,19 @@ class r0123456:
 		for i in range(self.iters):
 			# print(f"Starting population in iteration {i+1}:", self.population)
 			# print(f"Population shape at the beginning of iteration {i + 1}:", self.population.shape[0], self.population.shape[1])
-			selected = self.selection()
-			# print("Selected individuals:", selected)
-			offspring = self.crossover(selected)
-			# print("Offspring:", offspring)
-			joined_population = np.vstack((self.mutation(offspring), self.population))
-			# print("Joined population:", joined_population)
-			# print("Joined population array shape:", joined_population.shape[0], joined_population.shape[1])
+			offspring = np.zeros((self.mu, self.num_cities), dtype=np.uint32)
+			for ii in range(self.mu):
+				p1 = self.selection()
+				p2 = self.selection()
+				offspring[ii] = self.recombination(p1, p2)
+
+			# self.mutation(offspring)  # verbetering is dit mee in de forloop zetten zodat het mee al ittereert
+
+			# self.mutation(self.population)
+
+			joined_population = np.vstack((self.mutation(offspring), self.mutation(self.population)))
+
+
 			self.population = self.elimination(joined_population)
 			# print(f"Population shape at the end of iteration {i+1}:", self.population.shape[0], self.population.shape[1])
 
@@ -143,20 +159,29 @@ class r0123456:
 			if timeLeft < 0:
 				break
 
+			fvals = self.objfpop(self.population)
+			meanObj = np.mean(fvals)
+			bestObj = np.min(fvals)
+			print('mean: ' + str(meanObj) + '     best: ' + str(bestObj))
+
 		# Your code here.
 		return 0
 
 
 if __name__ == "__main__":
 	file_name = "./test/tour29.csv"
+	# create TSP problem
+	# hier kan een class gemaakt worden voor een random TSP problem met input file name
+	# en num cities en weights enzo die hier terug te vinden zijn --> kijk naar het voorbeeld in de les van code
+	# create parameters
 	alpha = 0.05  # mutation rate
 	lambdaa = 50  # population size, maybe too much
-	mu = 50  # also maybe too much we need to check
+	mu = 50  # also maybe too much we need to check (TODO is dit offspring?)
 	iters = 100  # number of iterations to be run
-	k = 5
+	k = 5  # for k-tournament selection
 	algorithm = r0123456(lambdaa=lambdaa, mu=mu, alpha=alpha, iters=iters, k=k)
 
-	# algorithm.optimize("./test/tour100.csv")
+	algorithm.optimize("./test/tour100.csv")
 	# Mutation test
 	# algorithm.population = algorithm.initialize()
 	# print(algorithm.population)
