@@ -1,8 +1,7 @@
 from reporter import Reporter
 import numpy as np
 import random
-
-
+import os, psutil
 
 # Modify the class name to match your student number. Evolutionary algorithm
 # Git kraken
@@ -82,7 +81,8 @@ class r0123456:
 		:return: mutated population
 		"""
 		# Create 2D numpy array with 2 columns for two index
-		for i in range(population.shape[0]):
+		ii = np.where(np.random.rand(np.size(population, 0)) <= self.alpha)[0]
+		for i in ii:
 			# print(f"Population[{i}]", population[i, :])
 			positions = np.random.choice(np.arange(0, population.shape[1], dtype=np.uint32), replace=False, size=2)
 			pos1, pos2 = min(positions), max(positions)
@@ -114,41 +114,34 @@ class r0123456:
 		:param joined_population:
 		:return:
 		"""
-		# print("Shape of joined population which came into elimination process:", joined_population.shape[0], joined_population.shape[1])
 		fvals = self.objfpop(joined_population)
-		# print("Fvals in elimination:", fvals)
 		perm = np.argsort(fvals)
-		# print("Perm in elimination:", perm)
-		# print(perm[0:self.lambdaa])
 		survivors = joined_population[perm[0:self.lambdaa], :]
-		# print(self.objfpop(survivors))
-		# print()
 		return survivors
 
 	def optimize(self, filename):
+		"""
+		:param filename:
+		:return:
+		"""
 		test_file = open(filename)
 		self.weights = np.loadtxt(test_file, delimiter=",")
+		self.weights[self.weights == np.inf] = 1e7  # comment that
 		test_file.close()
 		self.num_cities = self.weights.shape[0]
 		self.population = self.initialize()  # Initialize population
 
+		best_value, best_cycle = None, None
 		for i in range(self.iters):
-			# print(f"Starting population in iteration {i+1}:", self.population)
-			# print(f"Population shape at the beginning of iteration {i + 1}:", self.population.shape[0], self.population.shape[1])
 			offspring = np.zeros((self.mu, self.num_cities), dtype=np.uint32)
 			for ii in range(self.mu):
 				p1 = self.selection()
 				p2 = self.selection()
 				offspring[ii] = self.recombination(p1, p2)
-				#offspring[ii] = p1
 
-			# self.mutation(offspring)  # verbetering is dit mee in de forloop zetten zodat het mee al ittereert
-			# self.mutation(self.population)
 			joined_population = np.vstack((self.mutation(offspring), self.mutation(self.population)))
 
 			self.population = self.elimination(joined_population)
-
-			# print(f"Population shape at the end of iteration {i+1}:", self.population.shape[0], self.population.shape[1])
 
 			# Your code here.
 			# Call the reporter with:
@@ -164,10 +157,15 @@ class r0123456:
 			if timeLeft < 0:
 				break
 
-			print('mean: ' + str(mean_objective) + '     best: ' + str(objective_values[best_objective_index]))
-		# Your code here.
-		return 0
+			# print('mean: ' + str(mean_objective) + '     best: ' + str(objective_values[best_objective_index]))
 
+			if best_value is None or objective_values[best_objective_index] < best_value:
+				best_value = objective_values[best_objective_index]
+				best_cycle = self.population[best_objective_index]
+
+		print("Best value:", best_value)
+		print("Best cycle:", best_cycle)
+		return 0
 
 if __name__ == "__main__":
 	filename = "./test/tour29.csv"
@@ -175,36 +173,20 @@ if __name__ == "__main__":
 	# hier kan een class gemaakt worden voor een random TSP problem met input file name
 	# en num cities en weights enzo die hier terug te vinden zijn --> kijk naar het voorbeeld in de les van code
 	# create parameters
-	alpha = 0.03  # mutation rate
-	lambdaa = 2  # population size, maybe too much
-	mu = 4  # also maybe too much we need to check (TODO is dit offspring?)
+	alpha = 0.1  # mutation rate
+	lambdaa = 100  # population size, maybe too much
+	mu = 200  # also maybe too much we need to check (TODO is dit offspring?)
 	iters = 100  # number of iterations to be run
-	k = 10  # for k-tournament selection
+	k = 9  # for k-tournament selection
 	algorithm = r0123456(lambdaa=lambdaa, mu=mu, alpha=alpha, iters=iters, k=k)
-
-	# test_file = open(filename)
-	# algorithm.weights = np.loadtxt(test_file, delimiter=",")
-	# test_file.close()
-	# algorithm.num_cities = algorithm.weights.shape[0]
-	# algorithm.population = algorithm.initialize()  # Initialize population
-#
-	# total = 0
-	# for i in range(algorithm.num_cities):
-	# 	for j in range(algorithm.num_cities):
-	# 		if algorithm.weights[i][j] == np.inf:
-	# 			total += 1
-#
-	# print(total / 2)
-#
-	#for i in range(lambdaa):
-		#print(algorithm.population[i])
-		#print(algorithm.objf(algorithm.population[i]))
-
 	algorithm.optimize(filename)
-	# Mutation test
-	# algorithm.population = algorithm.initialize()
-	# print(algorithm.population)
-	# algorithm.mutation(population=algorithm.population)
+
+	# Print memory consumption in bytes
+	process = psutil.Process(os.getpid())
+	bytes_mem_cons = process.memory_info().rss # in bytes
+	print(f"Memory in consumption in MB: {bytes_mem_cons / (1024*1024):.2f}")
+
+
 
 
 
