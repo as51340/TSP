@@ -2,6 +2,8 @@ from reporter import Reporter
 import numpy as np
 import random
 import os, psutil
+import matplotlib.pyplot as plt
+import time
 
 # Modify the class name to match your student number. Evolutionary algorithm
 # Git kraken
@@ -124,6 +126,7 @@ class r0123456:
 		:param filename:
 		:return:
 		"""
+
 		test_file = open(filename)
 		self.weights = np.loadtxt(test_file, delimiter=",")
 		self.weights[self.weights == np.inf] = 1e7  # comment that
@@ -132,6 +135,11 @@ class r0123456:
 		self.population = self.initialize()  # Initialize population
 
 		best_value, best_cycle = None, None
+
+		mean_ar = []
+		best_ar = []
+		time_arr=[]
+		old_time = time.time()
 		for i in range(self.iters):
 			offspring = np.zeros((self.mu, self.num_cities), dtype=np.uint32)
 			for ii in range(self.mu):
@@ -162,9 +170,31 @@ class r0123456:
 			if best_value is None or objective_values[best_objective_index] < best_value:
 				best_value = objective_values[best_objective_index]
 				best_cycle = self.population[best_objective_index]
+			print('i'+ str(i) + '  mean: ' + str(mean_objective) + '           best: ' + str(objective_values[best_objective_index]))
+			mean_ar.append(mean_objective)
+			best_ar.append(objective_values[best_objective_index])
+			new_time = time.time()
+			time_arr.append(new_time-old_time)
 
-		print("Best value:", best_value)
-		print("Best cycle:", best_cycle)
+		plot1 = plt.figure(1)
+		plt.plot(mean_ar, label = "mean")
+		plt.plot(best_ar, label = "best")
+		plt.xlabel("iterations", fontsize=20)
+		plt.ylabel("objective value", fontsize=20)
+		plt.legend(prop={'size': 20})
+
+		plot2 = plt.figure(2)
+		plt.plot(time_arr, mean_ar, label="mean")
+		plt.plot(time_arr, best_ar, label="best")
+		plt.xlabel("time (s)", fontsize=20)
+		plt.ylabel("objective value", fontsize=20)
+		plt.legend(prop={'size': 20})
+
+		plt.show()
+
+
+		#print("Best value:", best_value)
+		#print("Best cycle:", best_cycle)
 		return 0
 
 if __name__ == "__main__":
@@ -173,11 +203,11 @@ if __name__ == "__main__":
 	# hier kan een class gemaakt worden voor een random TSP problem met input file name
 	# en num cities en weights enzo die hier terug te vinden zijn --> kijk naar het voorbeeld in de les van code
 	# create parameters
-	alpha = 0.1  # mutation rate
-	lambdaa = 100  # population size, maybe too much
-	mu = 200  # also maybe too much we need to check (TODO is dit offspring?)
+	alpha = 0.07  # mutation rate
+	lambdaa = 500  # population size, maybe too much
+	mu = 500  # also maybe too much we need to check (TODO is dit offspring?)
 	iters = 100  # number of iterations to be run
-	k = 9  # for k-tournament selection
+	k = 3 # for k-tournament selection
 	algorithm = r0123456(lambdaa=lambdaa, mu=mu, alpha=alpha, iters=iters, k=k)
 	algorithm.optimize(filename)
 
